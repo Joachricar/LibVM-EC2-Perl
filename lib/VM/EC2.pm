@@ -7640,9 +7640,10 @@ sub _sign {
     my $self    = shift;
     my @args    = @_;
 
+	my $uri = URI->new($self->endpoint);
     my $action = 'POST';
-    my $host   = lc URI->new($self->endpoint)->host;
-    my $path   = '/';
+    my $host   = lc $uri->host . ":" . $uri->port;
+    my $path   = $uri->path;
 
     my %sign_hash                = @args;
     $sign_hash{AWSAccessKeyId}   = $self->id;
@@ -7662,7 +7663,6 @@ sub _sign {
     my $signature = encode_base64(hmac_sha256($to_sign,$self->secret),'');
     $sign_hash{Signature} = $signature;
 
-    my $uri = URI->new($self->endpoint);
     $uri->query_form(\%sign_hash);
 
     return POST $self->endpoint,[%sign_hash];
